@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { Search, Filter, PlayCircle, BookOpen } from 'lucide-react';
+import { Search, PlayCircle, BookOpen } from 'lucide-react';
 
 interface Material {
   id: string;
