@@ -7,6 +7,8 @@ import TeacherDashboard from './pages/TeacherDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Materials from './pages/Materials';
 import Teachers from './pages/Teachers';
+import TeacherConnectDashboard from './pages/TeacherConnectDashboard';
+import TeacherConnectSend from './pages/TeacherConnectSend';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode, roles?: string[] }) => {
@@ -38,12 +40,14 @@ function AppRoutes() {
           <PublicDashboard />
         } />
         
-        {/* Auth */}
+        {/* Auth & Public specific routes */}
         <Route path="login" element={<Login />} />
+        <Route path="teacher-connect/send" element={<TeacherConnectSend />} />
 
         {/* Protected Teacher Routes */}
         <Route path="teacher" element={<ProtectedRoute roles={['TEACHER']}><TeacherDashboard /></ProtectedRoute>} />
         <Route path="materials" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><Materials /></ProtectedRoute>} />
+        <Route path="teacher-connect" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><TeacherConnectDashboard /></ProtectedRoute>} />
 
         {/* Protected Admin Routes */}
         <Route path="admin" element={<ProtectedRoute roles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />

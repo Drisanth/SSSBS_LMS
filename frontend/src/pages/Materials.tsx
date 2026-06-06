@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Edit, Trash2, Link as LinkIcon, MessageSquare } from 'lucide-react';
@@ -22,6 +23,7 @@ interface Material {
 
 const Materials = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -58,6 +60,21 @@ const Materials = () => {
 
   useEffect(() => {
     fetchMaterials();
+    
+    // Check if we came from Teacher Connect with a resource to publish
+    if (location.state?.prefillResource) {
+      const res = location.state.prefillResource;
+      setFormData(prev => ({
+        ...prev,
+        title: res.title || '',
+        description: res.notes || '',
+        urlOrPath: res.resourceUrl || '',
+        type: res.resourceType || 'EXTERNAL_LINK'
+      }));
+      setIsModalOpen(true);
+      // Clear the state so it doesn't reopen on refresh
+      window.history.replaceState({}, document.title);
+    }
   }, [user]);
 
   const availableGrades = useMemo(() => {
@@ -139,6 +156,14 @@ const Materials = () => {
         await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/materials`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        
+        if (location.state?.prefillResource?.id) {
+          try {
+            await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/teacher-connect/resources/${location.state.prefillResource.id}`, { status: 'published' }, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+          } catch(e) {}
+        }
       }
       setIsModalOpen(false);
       fetchMaterials();

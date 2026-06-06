@@ -25,6 +25,8 @@ model User {
   comments        ReviewComment[]
   teacherProfile  TeacherProfile?
   studentProfile  StudentProfile?
+  teacherConnectSessions   TeacherConnectSession[] @relation("SessionTeacher")
+  teacherConnectResources  TeacherConnectResource[] @relation("ResourceTeacher")
 }
 
 model TeacherProfile {
@@ -97,3 +99,30 @@ model Section {
   classId String
   class   Class  @relation(fields: [classId], references: [id])
 }
+
+model TeacherConnectSession {
+  id            String   @id @default(uuid())
+  teacherId     String
+  teacher       User     @relation("SessionTeacher", fields: [teacherId], references: [id])
+  transferCode  String   @unique
+  expiresAt     DateTime
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+model TeacherConnectResource {
+  id                  String   @id @default(uuid())
+  teacherId           String
+  teacher             User     @relation("ResourceTeacher", fields: [teacherId], references: [id])
+  title               String?
+  notes               String?
+  resourceUrl         String
+  resourceType        String   // YOUTUBE, PDF, IMAGE, VIDEO, DRIVE, WEBSITE, UNKNOWN
+  status              String   @default("inbox") // inbox, published, archived, deleted
+  publishedMaterialId String?  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  archivedAt          DateTime?
+  deletedAt           DateTime?
+}
+

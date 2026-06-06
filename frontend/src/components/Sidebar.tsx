@@ -4,10 +4,10 @@ import {
   Home, 
   BookOpen, 
   Users, 
-  Search, 
   Settings, 
   LogOut, 
-  LogIn 
+  LogIn,
+  Smartphone
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -16,19 +16,20 @@ const Sidebar = ({ onClose }: { onClose?: () => void }) => {
   const location = useLocation();
 
   const publicLinks = [
-    { to: '/', icon: Home, label: 'Dashboard' },
-    { to: '/search', icon: Search, label: 'Search' },
+    { to: '/', icon: Home, label: 'Dashboard' }
   ];
 
   const teacherLinks = [
     { to: '/teacher', icon: Home, label: 'My Dashboard' },
     { to: '/materials', icon: BookOpen, label: 'My Materials' },
+    { to: '/teacher-connect', icon: Smartphone, label: 'Teacher Connect' },
   ];
 
   const adminLinks = [
     { to: '/admin', icon: Home, label: 'Admin Dashboard' },
     { to: '/materials', icon: BookOpen, label: 'All Materials' },
     { to: '/teachers', icon: Users, label: 'Teachers' },
+    { to: '/teacher-connect', icon: Smartphone, label: 'Teacher Connect' },
     { to: '/settings', icon: Settings, label: 'Settings' },
   ];
 
