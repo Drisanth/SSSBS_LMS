@@ -42,7 +42,10 @@ router.post('/login', async (req, res) => {
         id: user.id,
         username: user.username,
         name: user.name,
-        role: user.role
+        role: user.role,
+        email: user.email,
+        phone: user.phone,
+        requiresPasswordChange: user.requiresPasswordChange
       }
     });
   } catch (error) {
@@ -69,8 +72,11 @@ router.get('/me', async (req, res) => {
         id: true,
         username: true,
         name: true,
+        email: true,
+        phone: true,
         role: true,
         status: true,
+        requiresPasswordChange: true,
         teacherProfile: true
       }
     });
@@ -83,6 +89,51 @@ router.get('/me', async (req, res) => {
     res.json(user);
   } catch (err) {
     res.status(403).json({ error: 'Invalid token' });
+  }
+});
+
+// Change Password
+router.post('/change-password', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    res.status(401).json({ error: 'Access denied' });
+    return;
+  }
+
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    const decoded: any = jwt.verify(token, JWT_SECRET);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId }
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      res.status(401).json({ error: 'Incorrect current password' });
+      return;
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { 
+        password: hashedNewPassword,
+        requiresPasswordChange: false
+      }
+    });
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    res.status(403).json({ error: 'Invalid token or server error' });
   }
 });
 

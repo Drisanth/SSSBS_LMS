@@ -6,6 +6,7 @@ interface User {
   username: string;
   name: string;
   role: string;
+  requiresPasswordChange?: boolean;
 }
 
 interface AuthContextType {
@@ -13,13 +14,15 @@ interface AuthContextType {
   loading: boolean;
   login: (token: string, userData: User) => void;
   logout: () => void;
+  checkAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   login: () => {},
-  logout: () => {}
+  logout: () => {},
+  checkAuth: async () => {}
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -28,22 +31,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setUser(res.data);
-        } catch (error) {
-          localStorage.removeItem('token');
-        }
+  const checkAuth = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUser(res.data);
+      } catch (error) {
+        localStorage.removeItem('token');
       }
-      setLoading(false);
-    };
+    }
+    setLoading(false);
+  };
 
+  useEffect(() => {
     checkAuth();
   }, []);
 
@@ -58,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { prisma } from '../index';
 import { authenticateToken, requireRole, AuthRequest } from '../middleware/auth';
+import { sendWelcomeEmail } from '../utils/email';
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.get('/', async (req, res) => {
         username: true,
         name: true,
         email: true,
+        phone: true,
         status: true,
         teacherProfile: true,
         createdAt: true
@@ -32,7 +34,7 @@ router.get('/', async (req, res) => {
 
 // Create new teacher
 router.post('/', async (req, res) => {
-  const { username, name, password, subjects, grades } = req.body;
+  const { username, name, password, email, phone, subjects, grades } = req.body;
 
   try {
     const existing = await prisma.user.findUnique({ where: { username } });
@@ -47,6 +49,8 @@ router.post('/', async (req, res) => {
       data: {
         username,
         name,
+        email: email || null,
+        phone: phone || null,
         password: hashedPassword,
         role: 'TEACHER',
         teacherProfile: {
@@ -59,6 +63,12 @@ router.post('/', async (req, res) => {
       include: { teacherProfile: true }
     });
 
+    // Send Welcome Email if email is provided
+    if (email) {
+      // Fire and forget (don't await so we don't block the API response unnecessarily)
+      sendWelcomeEmail(email, name, username, subjects || '', grades || '');
+    }
+
     // Don't send password back
     const { password: _, ...teacherData } = newTeacher;
     res.status(201).json(teacherData);
@@ -70,7 +80,7 @@ router.post('/', async (req, res) => {
 // Update teacher status (Disable/Enable) or details
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, status, subjects, grades } = req.body;
+  const { name, email, phone, status, subjects, grades } = req.body;
 
   try {
     const teacher = await prisma.user.findUnique({
@@ -86,6 +96,8 @@ router.put('/:id', async (req, res) => {
       where: { id },
       data: {
         name: name !== undefined ? name : teacher.name,
+        email: email !== undefined ? email : teacher.email,
+        phone: phone !== undefined ? phone : teacher.phone,
         status: status !== undefined ? status : teacher.status,
         teacherProfile: {
           update: {
@@ -104,17 +116,32 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Soft Delete teacher (Set status to DISABLED and handle cleanup if needed)
+// Hard Delete teacher (Delete profile, sessions, reassign materials to Admin)
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
+  const adminId = (req as any).user?.userId; // Assuming authenticateToken sets req.user
 
   try {
-    await prisma.user.update({
-      where: { id, role: 'TEACHER' },
-      data: { status: 'DISABLED' } // We don't delete to preserve material references
-    });
-    res.json({ message: 'Teacher disabled successfully' });
+    // 1. Reassign materials to the Admin so the school doesn't lose them
+    if (adminId) {
+      await prisma.material.updateMany({
+        where: { uploaderId: id },
+        data: { uploaderId: adminId }
+      });
+    }
+
+    // 2. Delete all related records in a transaction
+    await prisma.$transaction([
+      prisma.teacherProfile.deleteMany({ where: { userId: id } }),
+      prisma.teacherConnectResource.deleteMany({ where: { teacherId: id } }),
+      prisma.teacherConnectSession.deleteMany({ where: { teacherId: id } }),
+      prisma.reviewComment.deleteMany({ where: { authorId: id } }),
+      prisma.user.delete({ where: { id, role: 'TEACHER' } })
+    ]);
+
+    res.json({ message: 'Teacher and associated records deleted successfully' });
   } catch (error) {
+    console.error('Error deleting teacher:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

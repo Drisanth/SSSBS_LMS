@@ -7,7 +7,8 @@ import {
   Settings, 
   LogOut, 
   LogIn,
-  Smartphone
+  Smartphone,
+  User
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -71,10 +72,16 @@ const Sidebar = ({ onClose }: { onClose?: () => void }) => {
               <p className="text-sm font-medium">{user.name}</p>
               <p className="text-xs text-secondary">{user.role}</p>
             </div>
-            <button onClick={logout} className="nav-item text-danger hover:text-danger w-full">
-              <LogOut size={18} />
-              Logout
-            </button>
+            <div className="flex flex-col gap-1">
+              <Link to="/profile" className={clsx('nav-item', location.pathname === '/profile' && 'active')} onClick={onClose}>
+                <User size={18} />
+                My Profile
+              </Link>
+              <button onClick={logout} className="nav-item text-danger hover:text-danger w-full">
+                <LogOut size={18} />
+                Logout
+              </button>
+            </div>
           </div>
         ) : (
           <Link to="/login" className="nav-item text-primary">

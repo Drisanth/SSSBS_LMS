@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import PublicDashboard from './pages/PublicDashboard';
@@ -9,21 +9,24 @@ import Materials from './pages/Materials';
 import Teachers from './pages/Teachers';
 import TeacherConnectDashboard from './pages/TeacherConnectDashboard';
 import TeacherConnectSend from './pages/TeacherConnectSend';
+import Profile from './pages/Profile';
+import ForcePasswordChange from './pages/ForcePasswordChange';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode, roles?: string[] }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
-  if (loading) return <div className="p-8"><div className="skeleton h-8 w-64 mb-4"></div><div className="skeleton h-64 w-full"></div></div>;
+  if (loading) return <div className="flex items-center justify-center h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
+  if (!user) return <Navigate to="/login" replace />;
 
-  if (!user) {
-    return <Navigate to="/login" />;
+  // Force password change on first login
+  if (user.requiresPasswordChange && location.pathname !== '/force-password-change') {
+    return <Navigate to="/force-password-change" replace />;
   }
 
-  if (roles && !roles.includes(user.role)) {
-    return <Navigate to="/" />; // Redirect if not authorized
-  }
-
+  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  
   return <>{children}</>;
 };
 
@@ -32,6 +35,18 @@ function AppRoutes() {
 
   return (
     <Routes>
+      {/* Auth & Public specific routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/teacher-connect/send" element={<TeacherConnectSend />} />
+
+      {/* Forced Password Change Route - No Layout */}
+      <Route path="/force-password-change" element={
+        <ProtectedRoute>
+          <ForcePasswordChange />
+        </ProtectedRoute>
+      } />
+
+      {/* Main Application with Layout */}
       <Route path="/" element={<Layout />}>
         {/* Public Route */}
         <Route index element={
@@ -40,14 +55,11 @@ function AppRoutes() {
           <PublicDashboard />
         } />
         
-        {/* Auth & Public specific routes */}
-        <Route path="login" element={<Login />} />
-        <Route path="teacher-connect/send" element={<TeacherConnectSend />} />
-
         {/* Protected Teacher Routes */}
         <Route path="teacher" element={<ProtectedRoute roles={['TEACHER']}><TeacherDashboard /></ProtectedRoute>} />
         <Route path="materials" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><Materials /></ProtectedRoute>} />
         <Route path="teacher-connect" element={<ProtectedRoute roles={['TEACHER', 'ADMIN']}><TeacherConnectDashboard /></ProtectedRoute>} />
+        <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
         {/* Protected Admin Routes */}
         <Route path="admin" element={<ProtectedRoute roles={['ADMIN']}><AdminDashboard /></ProtectedRoute>} />
