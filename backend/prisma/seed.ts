@@ -18,7 +18,7 @@ async function main() {
     create: {
       username: 'admin',
       name: 'Principal Administrator',
-      password: adminPassword,
+      password: 'admin',
       role: 'ADMIN'
     }
   })

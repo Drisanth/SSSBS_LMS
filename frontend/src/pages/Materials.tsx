@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Plus, Edit, Trash2, Link as LinkIcon, MessageSquare } from 'lucide-react';
@@ -63,6 +63,18 @@ const Materials = () => {
   useEffect(() => {
     fetchMaterials();
   }, [user]);
+
+  const availableGrades = useMemo(() => {
+    const grades = new Set<string>();
+    materials.forEach(m => grades.add(m.grade));
+    return Array.from(grades).sort();
+  }, [materials]);
+
+  const availableSubjects = useMemo(() => {
+    const subjects = new Set<string>();
+    materials.forEach(m => subjects.add(m.subject));
+    return Array.from(subjects).sort();
+  }, [materials]);
 
   const handleOpenModal = (material?: Material) => {
     if (material) {
@@ -253,26 +265,33 @@ const Materials = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="label">Grade</label>
-                  <select className="input" value={formData.grade} onChange={e => setFormData({...formData, grade: e.target.value})} required>
-                    <option value="">Select Grade</option>
-                    <option value="Grade 8">Grade 8</option>
-                    <option value="Grade 9">Grade 9</option>
-                    <option value="Grade 10">Grade 10</option>
-                    <option value="Grade 11">Grade 11</option>
-                    <option value="Grade 12">Grade 12</option>
-                  </select>
+                  <input 
+                    type="text" 
+                    list="gradesList"
+                    className="input" 
+                    value={formData.grade} 
+                    onChange={e => setFormData({...formData, grade: e.target.value})} 
+                    placeholder="e.g. Grade 10"
+                    required 
+                  />
+                  <datalist id="gradesList">
+                    {availableGrades.map(g => <option key={g} value={g} />)}
+                  </datalist>
                 </div>
                 <div>
                   <label className="label">Subject</label>
-                  <select className="input" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} required>
-                    <option value="">Select Subject</option>
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="Physics">Physics</option>
-                    <option value="Chemistry">Chemistry</option>
-                    <option value="English">English</option>
-                    <option value="Social Science">Social Science</option>
-                    <option value="Computer Science">Computer Science</option>
-                  </select>
+                  <input 
+                    type="text" 
+                    list="subjectsList"
+                    className="input" 
+                    value={formData.subject} 
+                    onChange={e => setFormData({...formData, subject: e.target.value})} 
+                    placeholder="e.g. Mathematics"
+                    required 
+                  />
+                  <datalist id="subjectsList">
+                    {availableSubjects.map(s => <option key={s} value={s} />)}
+                  </datalist>
                 </div>
               </div>
 
