@@ -76,7 +76,7 @@ router.put('/:id', authenticateToken, requireRole(['TEACHER', 'ADMIN']), async (
   if (!req.user) return;
 
   try {
-    const existing = await prisma.material.findUnique({ where: { id } });
+    const existing = await prisma.material.findUnique({ where: { id: String(id) } });
     if (!existing) {
       res.status(404).json({ error: 'Material not found' });
       return;
@@ -91,7 +91,7 @@ router.put('/:id', authenticateToken, requireRole(['TEACHER', 'ADMIN']), async (
     if (createNewVersion) {
       // Archive old version
       await prisma.material.update({
-        where: { id },
+        where: { id: String(id) },
         data: { status: 'ARCHIVED' }
       });
 
@@ -111,7 +111,7 @@ router.put('/:id', authenticateToken, requireRole(['TEACHER', 'ADMIN']), async (
     } else {
       // In-place update
       const updated = await prisma.material.update({
-        where: { id },
+        where: { id: String(id) },
         data: updateData
       });
       res.json(updated);
@@ -128,7 +128,7 @@ router.delete('/:id', authenticateToken, requireRole(['TEACHER', 'ADMIN']), asyn
   if (!req.user) return;
 
   try {
-    const existing = await prisma.material.findUnique({ where: { id } });
+    const existing = await prisma.material.findUnique({ where: { id: String(id) } });
     if (!existing) {
       res.status(404).json({ error: 'Material not found' });
       return;
@@ -142,7 +142,7 @@ router.delete('/:id', authenticateToken, requireRole(['TEACHER', 'ADMIN']), asyn
 
     // Soft delete
     await prisma.material.update({
-      where: { id },
+      where: { id: String(id) },
       data: { isDeleted: true }
     });
 
@@ -162,7 +162,7 @@ router.post('/:id/reviews', authenticateToken, requireRole(['ADMIN']), async (re
     const comment = await prisma.reviewComment.create({
       data: {
         content,
-        materialId: id,
+        materialId: String(id),
         authorId: req.user.userId
       }
     });
@@ -178,7 +178,7 @@ router.get('/:id/reviews', authenticateToken, requireRole(['TEACHER', 'ADMIN']),
   
   try {
     const comments = await prisma.reviewComment.findMany({
-      where: { materialId: id },
+      where: { materialId: String(id) },
       include: {
         author: { select: { name: true, role: true } }
       },
