@@ -17,7 +17,7 @@ interface Material {
   version: number;
   status: string;
   createdAt: string;
-  uploader: { name: string };
+  uploader: { id: string; name: string };
 }
 
 const Materials = () => {
@@ -44,12 +44,8 @@ const Materials = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      // If teacher, only fetch their materials. Admin fetches all.
-      // Actually, backend /api/materials returns all if no filter. 
-      // Let's pass teacherId if user is TEACHER.
-      const query = user?.role === 'TEACHER' ? `?teacherId=${user.id}` : '';
-      
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/materials${query}`, {
+      // Fetch all materials so dropdowns have all available grades/subjects from the DB.
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/materials`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMaterials(res.data);
@@ -75,6 +71,21 @@ const Materials = () => {
     materials.forEach(m => subjects.add(m.subject));
     return Array.from(subjects).sort();
   }, [materials]);
+
+  useEffect(() => {
+    // Auto-fill chapter name if subject, grade, and chapterNo match an existing material
+    if (formData.subject && formData.grade && formData.chapterNo) {
+      const match = materials.find(m => 
+        m.subject === formData.subject && 
+        m.grade === formData.grade && 
+        String(m.chapterNo) === String(formData.chapterNo) &&
+        m.chapterName
+      );
+      if (match && !formData.chapterName) {
+        setFormData(prev => ({ ...prev, chapterName: match.chapterName }));
+      }
+    }
+  }, [formData.subject, formData.grade, formData.chapterNo, materials]);
 
   const handleOpenModal = (material?: Material) => {
     if (material) {
@@ -193,7 +204,7 @@ const Materials = () => {
                 </td>
               </tr>
             ) : (
-              materials.map((mat) => (
+              (user?.role === 'TEACHER' ? materials.filter(m => m.uploader.id === user.id) : materials).map((mat) => (
                 <tr key={mat.id}>
                   <td>
                     <div className="font-medium">Ch {mat.chapterNo}</div>

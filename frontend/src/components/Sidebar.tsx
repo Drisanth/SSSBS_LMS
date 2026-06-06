@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 
-const Sidebar = () => {
+const Sidebar = ({ onClose }: { onClose?: () => void }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
 
@@ -54,6 +54,7 @@ const Sidebar = () => {
               key={link.to} 
               to={link.to} 
               className={clsx('nav-item', isActive && 'active')}
+              onClick={onClose}
             >
               <Icon size={18} />
               {link.label}

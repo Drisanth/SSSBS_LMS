@@ -103,6 +103,26 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .page-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
 .page-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); }
 
+.mobile-header { display: none; }
+.sidebar-wrapper { display: contents; }
+
+@media (max-width: 768px) {
+  .app-container { flex-direction: column; }
+  .mobile-header { 
+    display: flex; align-items: center; gap: 1rem; 
+    padding: 1rem; background-color: var(--surface-color); 
+    border-bottom: 1px solid var(--border-color);
+    position: sticky; top: 0; z-index: 30;
+  }
+  .sidebar-wrapper {
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
+    transform: translateX(-100%); transition: transform var(--transition-normal);
+  }
+  .sidebar-wrapper.open { transform: translateX(0); }
+  .mobile-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 40; }
+  .main-content { padding: 1.5rem; }
+}
+
 /* Table */
 .table-container { overflow-x: auto; background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: var(--radius-md); }
 .table { width: 100%; border-collapse: collapse; text-align: left; }
