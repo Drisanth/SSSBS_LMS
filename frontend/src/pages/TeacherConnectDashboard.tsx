@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Smartphone, Copy, RefreshCw, Clock, ExternalLink, 
+import {
+  Smartphone, Copy, RefreshCw, Clock, ExternalLink,
   Archive, Trash2, Send, Search, FileText, Image as ImageIcon, Video, Globe, Play
 } from 'lucide-react';
 
@@ -21,7 +21,7 @@ const TeacherConnectDashboard = () => {
   const navigate = useNavigate();
   const [sessionInfo, setSessionInfo] = useState<{ transferCode: string; expiresAt: string } | null>(null);
   const [countdown, setCountdown] = useState<string>('');
-  
+
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('inbox');
@@ -52,7 +52,7 @@ const TeacherConnectDashboard = () => {
   // Countdown timer for session
   useEffect(() => {
     if (!sessionInfo) return;
-    
+
     const updateCountdown = () => {
       const now = new Date().getTime();
       const expiry = new Date(sessionInfo.expiresAt).getTime();
@@ -113,11 +113,11 @@ const TeacherConnectDashboard = () => {
     }
   };
 
-  const filteredResources = resources.filter(r => 
-    r.status === activeTab && 
-    (r.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-     r.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     r.resourceUrl.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredResources = resources.filter(r =>
+    r.status === activeTab &&
+    (r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.resourceUrl.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const inboxCount = resources.filter(r => r.status === 'inbox').length;
@@ -135,15 +135,15 @@ const TeacherConnectDashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="md:col-span-1">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-10 gap-6 mb-8 h-full">
+        <div className="md:col-span-1 lg:col-span-3">
           <div className="card h-full flex flex-col items-center text-center">
             <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-full text-indigo-600">
               <Smartphone size={32} />
             </div>
             <h3 className="font-semibold text-lg mb-2">Connect Your Phone</h3>
             <p className="text-sm text-secondary mb-6">Scan the QR code or enter the transfer code on your mobile device to start sending links instantly.</p>
-            
+
             {!sessionInfo ? (
               <button onClick={generateCode} className="btn btn-primary w-full">
                 <RefreshCw size={18} /> Generate Transfer Code
@@ -152,9 +152,9 @@ const TeacherConnectDashboard = () => {
               <div className="w-full">
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg mb-4 flex flex-col items-center">
                   <div className="bg-white p-2 rounded shadow-sm mb-4">
-                    <QRCodeSVG 
-                      value={`${window.location.origin}/teacher-connect/send?code=${sessionInfo.transferCode}`} 
-                      size={150} 
+                    <QRCodeSVG
+                      value={`${window.location.origin}/teacher-connect/send?code=${sessionInfo.transferCode}`}
+                      size={150}
                     />
                   </div>
                   <div className="font-mono text-2xl font-bold tracking-widest text-primary mb-2">
@@ -175,23 +175,23 @@ const TeacherConnectDashboard = () => {
           </div>
         </div>
 
-        <div className="md:col-span-2 flex flex-col">
+        <div className="md:col-span-2 lg:col-span-7 flex flex-col min-w-0">
           <div className="card flex-1 flex flex-col">
             <div className="flex items-center justify-between mb-6">
-              <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700 w-full">
-                <button 
+              <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700 w-full overflow-x-auto whitespace-nowrap hide-scrollbar">
+                <button
                   className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${activeTab === 'inbox' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-primary'}`}
                   onClick={() => setActiveTab('inbox')}
                 >
                   Inbox <span className="ml-1 bg-gray-100 dark:bg-gray-800 text-xs py-0.5 px-2 rounded-full">{inboxCount}</span>
                 </button>
-                <button 
+                <button
                   className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${activeTab === 'published' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-primary'}`}
                   onClick={() => setActiveTab('published')}
                 >
                   Published <span className="ml-1 bg-gray-100 dark:bg-gray-800 text-xs py-0.5 px-2 rounded-full">{publishedCount}</span>
                 </button>
-                <button 
+                <button
                   className={`pb-2 px-1 text-sm font-medium border-b-2 transition-colors ${activeTab === 'archived' ? 'border-primary text-primary' : 'border-transparent text-secondary hover:text-primary'}`}
                   onClick={() => setActiveTab('archived')}
                 >
@@ -201,9 +201,9 @@ const TeacherConnectDashboard = () => {
             </div>
 
             <div className="mb-4 relative">
-              <input 
-                type="text" 
-                placeholder="Search resources..." 
+              <input
+                type="text"
+                placeholder="Search resources..."
                 className="input pl-10"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -226,9 +226,9 @@ const TeacherConnectDashboard = () => {
                 <div className="flex flex-col gap-3">
                   {filteredResources.map(resource => (
                     <div key={resource.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-primary transition-colors bg-white dark:bg-[#1a1d24]">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 flex-1 min-w-0">
-                          <div className="mt-1 bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 w-full sm:flex-1 min-w-0">
+                          <div className="mt-1 bg-gray-50 dark:bg-gray-800 p-2 rounded shrink-0">
                             {getIconForType(resource.resourceType)}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -247,13 +247,13 @@ const TeacherConnectDashboard = () => {
                           </div>
                         </div>
 
-                        <div className="flex flex-col gap-2 shrink-0">
+                        <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto sm:shrink-0 justify-end border-t sm:border-t-0 border-gray-100 dark:border-gray-800 pt-3 sm:pt-0 mt-2 sm:mt-0">
                           {activeTab === 'inbox' && (
                             <button onClick={() => handlePublish(resource)} className="btn btn-primary text-xs py-1.5 px-3">
                               <Send size={14} /> Publish
                             </button>
                           )}
-                          
+
                           <div className="flex justify-end gap-1">
                             {activeTab !== 'archived' && (
                               <button onClick={() => updateStatus(resource.id, 'archived')} className="p-1.5 text-secondary hover:bg-gray-100 dark:hover:bg-gray-800 rounded" title="Archive">

@@ -298,7 +298,7 @@ const Materials = () => {
             </div>
             
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Grade</label>
                   <input 
@@ -331,7 +331,7 @@ const Materials = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Chapter Number</label>
                   <input type="number" className="input" value={formData.chapterNo} onChange={e => setFormData({...formData, chapterNo: e.target.value})} required />
@@ -352,7 +352,7 @@ const Materials = () => {
                 <textarea className="input" rows={3} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="label">Material Type</label>
                   <select className="input" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} required>
